@@ -11,7 +11,6 @@ const {
 } = require('graphql')
 
 const { resolver } = require('graphql-sequelize')
-const pluralize = require('pluralize')
 
 const staticTypes = {
   ListMetadata: new GraphQLObjectType({
@@ -23,7 +22,7 @@ const staticTypes = {
   })
 }
 
-const extraTypes = ({ modelsTypes }) => staticTypes
+const extraTypes = () => staticTypes
 
 const extraModelFields = ({ modelsTypes }, model) => {
   let extraFields = {}
@@ -46,7 +45,7 @@ const extraModelFields = ({ modelsTypes }, model) => {
   return extraFields
 }
 
-const extraModelQueries = ({ modelsTypes }, modelName, model, queries) => {
+const extraModelQueries = ({ modelsTypes, nameFormatter }, modelName, model, queries) => {
   if (!(modelName in queries)) {
     const [ primaryKey, ...otherPks ] = Object.keys(model.primaryKeys)
     if (otherPks.length) {
@@ -54,8 +53,8 @@ const extraModelQueries = ({ modelsTypes }, modelName, model, queries) => {
       return {}
     }
     return {
-      [modelName]: {
-        type: modelsTypes[model.name],
+      [nameFormatter.formatModelName(model.name)]: {
+        type: modelsTypes[nameFormatter.formatTypeName(model.name)],
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) }
         },
@@ -68,14 +67,14 @@ const extraModelQueries = ({ modelsTypes }, modelName, model, queries) => {
           }
         })
       },
-      [`all${pluralize(modelName)}`]: {
-        type: new GraphQLList(modelsTypes[model.name]),
+      [`all${nameFormatter.formatManyModelName(model.name)}`]: {
+        type: new GraphQLList(modelsTypes[nameFormatter.formatTypeName(model.name)]),
         args: {
           page: { type: GraphQLInt },
           perPage: { type: GraphQLInt },
           sortField: { type: GraphQLString },
           sortOrder: { type: GraphQLString },
-          filter: { type: modelsTypes[`${modelName}Filter`] }
+          filter: { type: modelsTypes[`${nameFormatter.formatModelName(model.name)}Filter`] }
         },
         resolve: resolver(model, {
           before: (findOptions, { page, perPage, sortField, sortOrder, filter }) => {
@@ -95,7 +94,7 @@ const extraModelQueries = ({ modelsTypes }, modelName, model, queries) => {
           }
         })
       },
-      [`_all${pluralize(modelName)}Meta`]: {
+      [`_all${nameFormatter.formatManyModelName(model.name)}Meta`]: {
         type: staticTypes.ListMetadata,
         args: {
           page: { type: GraphQLInt },
@@ -115,11 +114,11 @@ const extraModelQueries = ({ modelsTypes }, modelName, model, queries) => {
   }
 }
 
-const extraModelTypes = ({ modelsTypes }, modelName, model) => {
+const extraModelTypes = ({ modelsTypes, nameFormatter }, modelName, model) => {
   return {
-    [`${modelName}Filter`]: new GraphQLInputObjectType({
+    [`${nameFormatter.formatModelName(model.name)}Filter`]: new GraphQLInputObjectType({
       name: `${modelName}Filter`,
-      description: `${modelName}Filter implements react admin ${modelName} filter grammar`,
+      description: `${nameFormatter.formatModelName(model.name)}Filter implements react admin ${modelName} filter grammar`,
       fields: () => ({
         q: { type: GraphQLString }
         // todo : add fields + number_lt,lte,gt,gte
