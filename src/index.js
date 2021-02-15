@@ -24,11 +24,15 @@ const staticTypes = {
 
 const extraTypes = () => staticTypes
 
-const extraModelFields = ({ modelsTypes }, model) => {
+const extraModelFields = ({ modelsTypes, nameFormatter, logger }, model) => {
+  if (model === null) {
+    return {}
+  }
+
   let extraFields = {}
   const [ primaryKey, ...otherPks ] = Object.keys(model.primaryKeys)
   if (otherPks.length) {
-    console.warn(`graphql-sequelize-r / react-admin : Composite PKs are not yet handled by module (in ${model.name})`)
+    logger.log(`graphql-sequelize-r / react-admin : Composite PKs are not yet handled by module (in ${model.name})`)
     return extraFields
   }
 
@@ -45,15 +49,20 @@ const extraModelFields = ({ modelsTypes }, model) => {
   return extraFields
 }
 
-const extraModelQueries = ({ modelsTypes, nameFormatter }, modelName, model, queries) => {
-  if (!(modelName in queries)) {
+const extraModelQueries = ({ modelsTypes, nameFormatter, logger }, model, queries) => {
+  if (model === null) {
+    return {}
+  }
+
+  const queryName = nameFormatter.formatModelName(model.name)
+  if (!(queryName in queries)) {
     const [ primaryKey, ...otherPks ] = Object.keys(model.primaryKeys)
     if (otherPks.length) {
-      console.warn(`graphql-sequelize-r / react-admin : Composite PKs are not yet handled by module (in ${model.name})`)
+      logger.log(`graphql-sequelize-r / react-admin : Composite PKs are not yet handled by module (in ${model.name})`)
       return {}
     }
     return {
-      [nameFormatter.formatModelName(model.name)]: {
+      [queryName]: {
         type: modelsTypes[nameFormatter.formatTypeName(model.name)],
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) }
@@ -74,7 +83,7 @@ const extraModelQueries = ({ modelsTypes, nameFormatter }, modelName, model, que
           perPage: { type: GraphQLInt },
           sortField: { type: GraphQLString },
           sortOrder: { type: GraphQLString },
-          filter: { type: modelsTypes[`${nameFormatter.formatModelName(model.name)}Filter`] }
+          filter: { type:  modelsTypes[`${nameFormatter.formatTypeName(model.name)}Filter`] }
         },
         resolve: resolver(model, {
           before: (findOptions, { page, perPage, sortField, sortOrder, filter }) => {
@@ -101,7 +110,7 @@ const extraModelQueries = ({ modelsTypes, nameFormatter }, modelName, model, que
           perPage: { type: GraphQLInt },
           sortField: { type: GraphQLString },
           sortOrder: { type: GraphQLString },
-          filter: { type: modelsTypes[`${modelName}Filter`] }
+          filter: { type: modelsTypes[`${nameFormatter.formatTypeName(model.name)}Filter`] }
         },
         resolve: (_, { page, perPage, sortField, sortOrder, filter }) => {
           // Todo : apply filter
@@ -110,15 +119,20 @@ const extraModelQueries = ({ modelsTypes, nameFormatter }, modelName, model, que
       }
     }
   } else {
-    console.warn(`graphql-sequelize-r / react-admin : ${modelName} query already exists`)
+    console.warn(`graphql-sequelize-r / react-admin : ${queryName} query already exists`)
   }
 }
 
-const extraModelTypes = ({ modelsTypes, nameFormatter }, modelName, model) => {
+const extraModelTypes = ({ modelsTypes, nameFormatter }, model) => {
+  if (model === null) {
+    return {}
+  }
+
+  const typeName = nameFormatter.formatTypeName(model.name)
   return {
-    [`${nameFormatter.formatModelName(model.name)}Filter`]: new GraphQLInputObjectType({
-      name: `${modelName}Filter`,
-      description: `${nameFormatter.formatModelName(model.name)}Filter implements react admin ${modelName} filter grammar`,
+    [`${typeName}Filter`]: new GraphQLInputObjectType({
+      name: `${typeName}Filter`,
+      description: `${typeName}Filter implements react admin ${typeName} filter grammar`,
       fields: () => ({
         q: { type: GraphQLString }
         // todo : add fields + number_lt,lte,gt,gte

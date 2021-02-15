@@ -5,3 +5,16 @@
 ```bash
 yarn add @molaux/graphql-sequelize-r-react-admin
 ```
+
+## Use
+
+```javascript
+import graphqlSequelizeRReactAdmin from '@molaux/graphql-sequelize-r-react-admin'
+
+const {
+  extraModelFields: reactAdminFieldsGenerator,
+  extraModelQueries: reactAdminQueriesGenerator,
+  extraModelTypes: reactAdminTypesGenerator,
+  extraTypes: reactAdminExtraTypes
+} = graphqlSequelizeRReactAdmin
+```
