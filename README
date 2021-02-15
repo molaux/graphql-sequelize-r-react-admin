@@ -1,3 +1,7 @@
-# Graphql-sequelize-r
+# graphql-sequelize-r-react-admin
 
-## Use
+## Install
+
+```bash
+yarn add @molaux/graphql-sequelize-r-react-admin
+```
