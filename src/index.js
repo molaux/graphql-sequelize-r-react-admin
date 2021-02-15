@@ -25,7 +25,7 @@ const staticTypes = {
 const extraTypes = () => staticTypes
 
 const extraModelFields = ({ modelsTypes, nameFormatter, logger }, model) => {
-  if (model === null) {
+  if (model === undefined) {
     return {}
   }
 
@@ -50,7 +50,7 @@ const extraModelFields = ({ modelsTypes, nameFormatter, logger }, model) => {
 }
 
 const extraModelQueries = ({ modelsTypes, nameFormatter, logger }, model, queries) => {
-  if (model === null) {
+  if (model === undefined) {
     return {}
   }
 
@@ -124,7 +124,7 @@ const extraModelQueries = ({ modelsTypes, nameFormatter, logger }, model, querie
 }
 
 const extraModelTypes = ({ modelsTypes, nameFormatter }, model) => {
-  if (model === null) {
+  if (model === undefined) {
     return {}
   }
 
