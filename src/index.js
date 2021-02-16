@@ -15,7 +15,7 @@ const { resolver } = require('graphql-sequelize')
 const staticTypes = {
   ListMetadata: new GraphQLObjectType({
     name: 'ListMetadata',
-    description: `React admin lists meta data (count)`,
+    description: 'React admin lists meta data (count)',
     fields: {
       count: { type: new GraphQLNonNull(GraphQLInt) }
     }
@@ -29,8 +29,8 @@ const extraModelFields = ({ modelsTypes, nameFormatter, logger }, model) => {
     return {}
   }
 
-  let extraFields = {}
-  const [ primaryKey, ...otherPks ] = Object.keys(model.primaryKeys)
+  const extraFields = {}
+  const [primaryKey, ...otherPks] = Object.keys(model.primaryKeys)
   if (otherPks.length) {
     logger.log(`graphql-sequelize-r / react-admin : Composite PKs are not yet handled by module (in ${model.name})`)
     return extraFields
@@ -56,7 +56,7 @@ const extraModelQueries = ({ modelsTypes, nameFormatter, logger }, model, querie
 
   const queryName = nameFormatter.formatModelName(model.name)
   if (!(queryName in queries)) {
-    const [ primaryKey, ...otherPks ] = Object.keys(model.primaryKeys)
+    const [primaryKey, ...otherPks] = Object.keys(model.primaryKeys)
     if (otherPks.length) {
       logger.log(`graphql-sequelize-r / react-admin : Composite PKs are not yet handled by module (in ${model.name})`)
       return {}
@@ -83,7 +83,7 @@ const extraModelQueries = ({ modelsTypes, nameFormatter, logger }, model, querie
           perPage: { type: GraphQLInt },
           sortField: { type: GraphQLString },
           sortOrder: { type: GraphQLString },
-          filter: { type:  modelsTypes[`${nameFormatter.formatTypeName(model.name)}Filter`] }
+          filter: { type: modelsTypes[`${nameFormatter.formatTypeName(model.name)}Filter`] }
         },
         resolve: resolver(model, {
           before: (findOptions, { page, perPage, sortField, sortOrder, filter }) => {
